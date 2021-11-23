@@ -42,10 +42,9 @@ class TimeTableExtractor(Extractor):
     def get_floors(self, soup):
         floors = []
         for i in range(5):
-            try:
-                floors.append(soup.find("div", {"data-set-floor":f"{i}"}))
-            except:
-                continue
+            floor = soup.find("div", {"data-set-floor":f"{i}"})
+            if floor:
+                floors.append(floor)
         return floors
 
     def get_dj_name(self, dj_container):
@@ -68,7 +67,6 @@ class TimeTableExtractor(Extractor):
         djs_per_floor = {}
         
         if len(floors) > 0:
-            print(floors)
             for floor in floors:
                 floor_name, dj_names = self.extract_djs(floor)
                 djs_per_floor[floor_name] = dj_names
@@ -83,8 +81,8 @@ class TimeTableExtractor(Extractor):
         soup = self.load_soup()
     
         floors = self.get_floors(soup)
-        event["name"] = self.get_event_name(soup)
-        event["date"] = self.get_event_date(soup)
+        event["event_name"] = self.get_event_name(soup)
+        event["event_date"] = self.get_event_date(soup)
         event["djs_per_floor"] = self.construct_djs_per_floor_dict(floors)
 
         return event
