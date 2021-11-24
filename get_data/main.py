@@ -29,15 +29,20 @@ class TimeTableExtractor(Extractor):
         except:
             return
 
+    def remove_white_spaces(self, string):
+
+        return " ".join(string.split())
+
     def get_event_name(self, soup):
 
-        return soup.find("h1", class_ = "text-lg md:text-xl font-bold leading-snug").text
+        event_name = soup.find("h1", class_ = "text-lg md:text-xl font-bold leading-snug").text.strip()
+        return self.remove_white_spaces(event_name)
     
     def get_event_date(self, soup):
 
         date_container = soup.find("p", class_ = "text-sm md:text-md")
         date = date_container.find("span", class_ = "font-bold").text
-        return date
+        return self.remove_white_spaces(date)
     
     def get_floors(self, soup):
         floors = []
@@ -52,11 +57,11 @@ class TimeTableExtractor(Extractor):
         label = self.get_dj_label(dj_container)
         if label:
             dj_wo_label = dj_with_label.replace(label, "")
-            return (dj_wo_label, self.get_dj_label(dj_container))
-        return (dj_with_label, None)
+            return (self.remove_white_spaces(dj_wo_label), self.get_dj_label(dj_container))
+        return (self.remove_white_spaces(dj_with_label.strip()), None)
 
     def extract_djs(self, floor):
-        floor_name = floor.find("h2", class_ = "text-sm md:text-md leading-tight mb-1/4").text
+        floor_name = self.remove_white_spaces(floor.find("h2", class_ = "text-sm md:text-md leading-tight mb-1/4").text)
 
         djs = floor.find_all("div", "running-order-set__info")
         dj_names = [self.get_dj_name(dj) for dj in djs]
@@ -72,7 +77,6 @@ class TimeTableExtractor(Extractor):
                 djs_per_floor[floor_name] = dj_names
         
         return djs_per_floor
-
 
     
     def extract(self):
