@@ -53,15 +53,22 @@ class TimeTableExtractor(Extractor):
         return floors
 
     def get_dj_name(self, dj_container):
+        dj_dict = {}
+
         dj_with_label = dj_container.find("span",  {"class": "font-bold"}).text
         label = self.get_dj_label(dj_container)
+        dj_dict["label"] = label
         if label:
-            dj_wo_label = dj_with_label.replace(label, "")
-            return (self.remove_white_spaces(dj_wo_label), self.get_dj_label(dj_container))
-        return (self.remove_white_spaces(dj_with_label.strip()), None)
+            dj_dict["name"] = dj_with_label.replace(label, "")
+        else:
+            dj_dict["name"] = dj_with_label
+        return dj_dict
+    
 
-    def extract_djs(self, floor):
+    def extract_sets(self, floor):
         floor_name = self.remove_white_spaces(floor.find("h2", class_ = "text-sm md:text-md leading-tight mb-1/4").text)
+
+        sets = floor.find_all("li")
 
         djs = floor.find_all("div", "running-order-set__info")
         dj_names = [self.get_dj_name(dj) for dj in djs]
