@@ -80,7 +80,7 @@ class TimeTableExtractor(Extractor):
         
         if len(floors) > 0:
             for floor in floors:
-                floor_name, dj_names = self.extract_djs(floor)
+                floor_name, dj_names = self.extract_sets(floor)
                 djs_per_floor[floor_name] = dj_names
         
         return djs_per_floor
