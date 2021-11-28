@@ -25,8 +25,9 @@ class TimeTableExtractor(Extractor):
     
 
     def remove_white_spaces(self, string):
-
-        return " ".join(string.split())
+        if string:
+            return " ".join(string.split())
+        return
 
     def get_event_name(self, soup):
 
@@ -73,8 +74,8 @@ class TimeTableExtractor(Extractor):
 
         dj_name, label = self.get_dj_name_and_label(set_soup)
         
-        set["dj_name"] = dj_name
-        set["label"] = label
+        set["dj_name"] = self.remove_white_spaces(dj_name)
+        set["label"] = self.remove_white_spaces(label)
         set["starting_time"] = set_soup.get("data-set-item-start")
         set["ending_time"] = set_soup.get("data-set-item-end")
         return set
