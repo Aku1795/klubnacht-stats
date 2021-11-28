@@ -16,6 +16,11 @@ class Extractor(ABC):
     def load_soup(self):
         crawl_url = requests.get(self.url)
         return BeautifulSoup(crawl_url.content, "html.parser")
+    
+    def remove_white_spaces(self, string):
+        if string:
+            return " ".join(string.split())
+        return
 
 
 class TimeTableExtractor(Extractor):
@@ -23,11 +28,6 @@ class TimeTableExtractor(Extractor):
     def __init__(self, url) -> None:
         super().__init__(url)
     
-
-    def remove_white_spaces(self, string):
-        if string:
-            return " ".join(string.split())
-        return
 
     def get_event_name(self, soup):
 
