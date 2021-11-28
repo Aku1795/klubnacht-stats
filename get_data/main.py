@@ -55,13 +55,13 @@ class TimeTableExtractor(Extractor):
             return
     
     def get_dj_name_and_label(self, set_soup):
-        dj_container = set_soup.find("div",  class_ = "running-order-set__info")
-        dj_with_label = dj_container.find("span",  class_ = "font-bold").text
-        label = self.get_dj_label(dj_container)
+        dj_soup = set_soup.find("div",  class_ = "running-order-set__info")
+        dj_string = dj_soup.find("span",  class_ = "font-bold").text
+        label = self.get_dj_label(dj_soup)
         if label:
-            dj_name = dj_with_label.replace(label, "")
+            dj_name = dj_string.replace(label, "")
         else:
-            dj_name = dj_with_label
+            dj_name = dj_string
         
         return dj_name, label
 
