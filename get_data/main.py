@@ -69,7 +69,6 @@ class TimeTableExtractor(Extractor):
     def get_set(self, set_soup):
         set = {}
 
-        dj_with_label = set_soup.find("span",  {"class": "font-bold"}).text
         label = self.get_dj_label(set_soup)
 
         dj_name, label = self.get_dj_name_and_label(set_soup)
