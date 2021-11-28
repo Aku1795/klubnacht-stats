@@ -31,7 +31,7 @@ class TimeTableExtractor(Extractor):
 
     def get_event_name(self, soup):
 
-        event_name = soup.find("h1").text.strip()
+        event_name = soup.find("h1").text
         return self.remove_white_spaces(event_name)
     
     def get_event_date(self, soup):
