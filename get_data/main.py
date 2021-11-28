@@ -30,7 +30,7 @@ class TimeTableExtractor(Extractor):
 
     def get_event_name(self, soup):
 
-        event_name = soup.find("h1", class_ = "text-lg md:text-xl font-bold leading-snug").text.strip()
+        event_name = soup.find("h1").text.strip()
         return self.remove_white_spaces(event_name)
     
     def get_event_date(self, soup):
@@ -64,6 +64,7 @@ class TimeTableExtractor(Extractor):
         
         return dj_name, label
 
+
     def get_set(self, set_soup):
         set = {}
 
@@ -74,14 +75,14 @@ class TimeTableExtractor(Extractor):
         
         set["dj_name"] = dj_name
         set["label"] = label
-        set["starting_time"] = set_soup["data-set-item-start"]
-        set["ending_time"] = set_soup["data-set-item-end"]
+        set["starting_time"] = set_soup.get("data-set-item-start")
+        set["ending_time"] = set_soup.get("data-set-item-end")
         return set
     
 
     def get_sets_per_floor(self, floor):
 
-        floor_name = self.remove_white_spaces(floor.find("h2", class_ = "text-sm md:text-md leading-tight mb-1/4").text)
+        floor_name = self.remove_white_spaces(floor.find("h2").text)
 
         sets_soup = floor.find_all("li")
         sets = [self.get_set(set_soup) for set_soup in sets_soup]
