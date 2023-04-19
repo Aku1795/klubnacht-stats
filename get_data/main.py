@@ -52,6 +52,8 @@ class Main:
 if __name__ == "__main__":
 
     main = Main()
-    years_events = main.fetch_years_events(2016)
 
-    print(years_events)
+    months_events = main.fetch_month_events(2016, 2)
+    # years_events = main.fetch_years_events(2016)
+
+    print(months_events)

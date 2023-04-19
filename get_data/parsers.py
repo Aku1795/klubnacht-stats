@@ -58,30 +58,32 @@ class EventPageParser(Parser):
                 floors.append(floor)
         return floors
 
-    def get_dj_label(self, dj_container):
-        try:
-            return dj_container.find("span", {"class": "font-normal text-sm md:text-md lowercase"}).text
-        except:
-            return
+    def get_label_and_set_type(self, dj_container):
+        label = dj_container.find("span", {"class": "font-normal text-sm md:text-md lowercase"})
+        set_type = dj_container.find("span", {"class": "text-sm md:text-md font-bold uppercase self-end text-white"})
 
-    def get_dj_name_and_label(self, set_soup):
+        return label, set_type
+
+    def parse_dj_container(self, set_soup):
         dj_soup = set_soup.find("div", class_="running-order-set__info")
-        dj_string = dj_soup.find("span", class_="font-bold").text
-        label = self.get_dj_label(dj_soup)
-        if label:
-            dj_name = dj_string.replace(label, "")
-        else:
-            dj_name = dj_string
+        dj_name = dj_soup.find("span", class_="font-bold").text
+        label, set_type = self.get_label_and_set_type(dj_soup)
 
-        return dj_name, label
+        if label:
+            dj_name = dj_name.replace(label.text, "")
+        if set_type:
+            dj_name = dj_name.replace(set_type.text, "")
+
+        return dj_name, label, set_type
 
     def parse_set(self, set_soup):
         set = {}
 
-        dj_name, label = self.get_dj_name_and_label(set_soup)
+        dj_name, label, set_type = self.parse_dj_container(set_soup)
 
         set["dj_name"] = self.remove_white_spaces(dj_name)
-        set["label"] = self.remove_white_spaces(label)
+        set["label"] = self.remove_white_spaces(label.text) if label is not None else ""
+        set["set_type"] = set_type.text if set_type is not None else ""
         set["starting_time"] = set_soup.get("data-set-item-start")
         set["ending_time"] = set_soup.get("data-set-item-end")
         return set
