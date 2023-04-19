@@ -26,6 +26,7 @@ class Parser(ABC):
             return " ".join(string.split())
         return ""
 
+
 class EventPageParser(Parser):
     """
      A class used to parse an event page on Berghain website and extract information about the event.
@@ -50,13 +51,6 @@ class EventPageParser(Parser):
         date = date_container.find("span", class_="font-bold").text
         return self.remove_white_spaces(date)
 
-    def get_floors(self, soup):
-        floors = []
-        for i in range(5):
-            floor = soup.find("div", {"data-set-floor": f"{i}"})
-            if floor:
-                floors.append(floor)
-        return floors
 
     def get_label_and_set_type(self, dj_container):
         label = dj_container.find("span", {"class": "font-normal text-sm md:text-md lowercase"})
@@ -83,7 +77,7 @@ class EventPageParser(Parser):
 
         set["dj_name"] = self.remove_white_spaces(dj_name)
         set["label"] = self.remove_white_spaces(label.text) if label is not None else ""
-        set["set_type"] = set_type.text if set_type is not None else ""
+        set["set_type"] = self.remove_white_spaces(set_type.text) if set_type is not None else ""
         set["starting_time"] = set_soup.get("data-set-item-start")
         set["ending_time"] = set_soup.get("data-set-item-end")
         return set
@@ -97,13 +91,14 @@ class EventPageParser(Parser):
 
         return floor_name, sets
 
-    def construct_sets_per_floor_dict(self, floors):
+    def construct_sets_per_floor_dict(self, soup):
         sets_per_floor = {}
 
-        if len(floors) > 0:
-            for floor in floors:
-                floor_name, dj_names = self.get_sets_per_floor(floor)
-                sets_per_floor[floor_name] = dj_names
+        floors = soup.find_all("div", {"class" : "mt-1/4"})
+
+        for floor in floors:
+            floor_name, sets = self.get_sets_per_floor(floor)
+            sets_per_floor[floor_name] = sets
 
         return sets_per_floor
 
@@ -111,14 +106,12 @@ class EventPageParser(Parser):
 
         event = {}
         soup = self.load_soup()
-
-        # rint(soup)
-        floors = self.get_floors(soup)
         event["event_name"] = self.get_event_name(soup)
         event["event_date"] = self.get_event_date(soup)
-        event["sets_per_floor"] = self.construct_sets_per_floor_dict(floors)
+        event["sets_per_floor"] = self.construct_sets_per_floor_dict(soup)
 
         return event
+
 
 class MonthPageParser(Parser):
 
@@ -133,5 +126,3 @@ class MonthPageParser(Parser):
         links = [e.get('href') for e in events]
 
         return links
-
-
