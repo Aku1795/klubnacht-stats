@@ -1,7 +1,14 @@
 from parser import Parser
 
 class EventPageParser(Parser):
+    """
+     A class used to parse an event page on Berghain website and extract information about the event.
 
+    Attributes:
+    -----------
+    url: str
+        The URL of the event page to be parsed.
+    """
     def __init__(self, url) -> None:
         super().__init__(url)
     
