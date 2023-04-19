@@ -1,9 +1,7 @@
 import json
 import itertools
 
-from event_page_parser import EventPageParser
-from month_page_parser import MonthPageParser
-
+from parsers import EventPageParser, MonthPageParser
 
 class Main:
 
