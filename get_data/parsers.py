@@ -60,8 +60,8 @@ class Set:
         set_dict["dj_name"] = remove_white_spaces(dj_name)
         set_dict["label"] = remove_white_spaces(label.text) if label is not None else ""
         set_dict["set_type"] = remove_white_spaces(set_type.text) if set_type is not None else ""
-        set_dict["starting_time"] = set_soup.get("data-set-item-start")
-        set_dict["ending_time"] = set_soup.get("data-set-item-end")
+        set_dict["starting_time"] = self.set_soup.get("data-set-item-start")
+        set_dict["ending_time"] = self.set_soup.get("data-set-item-end")
         return set_dict
 
 
