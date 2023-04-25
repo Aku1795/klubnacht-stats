@@ -3,6 +3,12 @@ from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
 
 
+def remove_white_spaces(string):
+    if string:
+        return " ".join(string.split())
+    return ""
+
+
 class Parser(ABC):
     """
      An abstract class representing a parser for web pages.
@@ -21,36 +27,12 @@ class Parser(ABC):
         crawl_url = requests.get(self.url)
         return BeautifulSoup(crawl_url.content, "html.parser")
 
-    def remove_white_spaces(self, string):
-        if string:
-            return " ".join(string.split())
-        return ""
 
+class Set:
 
-class EventPageParser(Parser):
-    """
-     A class used to parse an event page on Berghain website and extract information about the event.
-
-    Attributes:
-    -----------
-    url: str
-        The URL of the event page to be parsed.
-    """
-
-    def __init__(self, url) -> None:
-        super().__init__(url)
-
-    def get_event_name(self, soup):
-
-        event_name = soup.find("h1").text
-        return self.remove_white_spaces(event_name)
-
-    def get_event_date(self, soup):
-
-        date_container = soup.find("p", class_="text-sm md:text-md")
-        date = date_container.find("span", class_="font-bold").text
-        return self.remove_white_spaces(date)
-
+    def __init__(self, set_soup):
+        self.set_soup = set_soup
+        self.set_dict = self.bulid_set_dict()
 
     def get_label_and_set_type(self, dj_container):
         label = dj_container.find("span", {"class": "font-normal text-sm md:text-md lowercase"})
@@ -70,24 +52,50 @@ class EventPageParser(Parser):
 
         return dj_name, label, set_type
 
-    def parse_set(self, set_soup):
-        set = {}
+    def bulid_set_dict(self):
+        set_dict = {}
 
-        dj_name, label, set_type = self.parse_dj_container(set_soup)
+        dj_name, label, set_type = self.parse_dj_container(self.set_soup)
 
-        set["dj_name"] = self.remove_white_spaces(dj_name)
-        set["label"] = self.remove_white_spaces(label.text) if label is not None else ""
-        set["set_type"] = self.remove_white_spaces(set_type.text) if set_type is not None else ""
-        set["starting_time"] = set_soup.get("data-set-item-start")
-        set["ending_time"] = set_soup.get("data-set-item-end")
-        return set
+        set_dict["dj_name"] = remove_white_spaces(dj_name)
+        set_dict["label"] = remove_white_spaces(label.text) if label is not None else ""
+        set_dict["set_type"] = remove_white_spaces(set_type.text) if set_type is not None else ""
+        set_dict["starting_time"] = set_soup.get("data-set-item-start")
+        set_dict["ending_time"] = set_soup.get("data-set-item-end")
+        return set_dict
+
+
+class EventPageParser(Parser):
+    """
+     A class used to parse an event page on Berghain website and extract information about the event.
+
+    Attributes:
+    -----------
+    url: str
+        The URL of the event page to be parsed.
+    """
+
+    def __init__(self, url) -> None:
+        super().__init__(url)
+
+    def get_event_name(self, soup):
+
+        event_name = soup.find("h1").text
+        return remove_white_spaces(event_name)
+
+    def get_event_date(self, soup):
+
+        date_container = soup.find("p", class_="text-sm md:text-md")
+        date = date_container.find("span", class_="font-bold").text
+        return remove_white_spaces(date)
+
 
     def get_sets_per_floor(self, floor):
 
-        floor_name = self.remove_white_spaces(floor.find("h2").text)
+        floor_name = remove_white_spaces(floor.find("h2").text)
 
         sets_soup = floor.find_all("li")
-        sets = [self.parse_set(set_soup) for set_soup in sets_soup]
+        sets = [Set(set_soup).set_dict for set_soup in sets_soup]
 
         return floor_name, sets
 
