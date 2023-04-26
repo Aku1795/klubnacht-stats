@@ -1,5 +1,6 @@
 import json
 import itertools
+import pandas as pd
 
 from parsers import EventPageParser, MonthPageParser
 
@@ -42,6 +43,16 @@ class Main:
 
         return list(itertools.chain.from_iterable(years_events))
 
+    def convert_to_flatten_dataframe(self, events):
+
+        flatten_df = pd.json_normalize(
+            events, "sets", ["event_name", "event_date"]
+        )
+        return flatten_df
+
+
+
+
     def write_to_json(self, events):
         json_object = json.dumps(events)
 
@@ -53,7 +64,8 @@ if __name__ == "__main__":
 
     main = Main()
 
-    months_events = main.fetch_month_events(2016, 2)
-    # years_events = main.fetch_years_events(2016)
-
-    print(months_events)
+    #months_events = main.fetch_month_events(2016, 2)
+    #print(months_events)
+    years_events = main.fetch_years_events(2016)
+    flatten_df = main.convert_to_flatten_dataframe(years_events)
+    flatten_df.to_csv("berghain_2016_sets.csv", index=False)
