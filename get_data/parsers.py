@@ -1,3 +1,5 @@
+import itertools
+
 import requests
 from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod
@@ -30,8 +32,9 @@ class Parser(ABC):
 
 class Set:
 
-    def __init__(self, set_soup):
+    def __init__(self, set_soup, floor_name):
         self.set_soup = set_soup
+        self.floor_name = floor_name
         self.set_dict = self.bulid_set_dict()
 
     def get_label_and_set_type(self, dj_container):
@@ -62,6 +65,7 @@ class Set:
         set_dict["set_type"] = remove_white_spaces(set_type.text) if set_type is not None else ""
         set_dict["starting_time"] = self.set_soup.get("data-set-item-start")
         set_dict["ending_time"] = self.set_soup.get("data-set-item-end")
+        set_dict["floor"] = self.floor_name
         return set_dict
 
 
@@ -95,20 +99,19 @@ class EventPageParser(Parser):
         floor_name = remove_white_spaces(floor.find("h2").text)
 
         sets_soup = floor.find_all("li")
-        sets = [Set(set_soup).set_dict for set_soup in sets_soup]
+        sets = [Set(set_soup, floor_name).set_dict for set_soup in sets_soup]
 
-        return floor_name, sets
+        return sets
 
     def construct_sets_per_floor_dict(self, soup):
-        sets_per_floor = {}
-
         floors = soup.find_all("div", {"class" : "mt-1/4"})
+        sets = []
 
         for floor in floors:
-            floor_name, sets = self.get_sets_per_floor(floor)
-            sets_per_floor[floor_name] = sets
+            floor_sets = self.get_sets_per_floor(floor)
+            sets.append(floor_sets)
 
-        return sets_per_floor
+        return list(itertools.chain.from_iterable(sets))
 
     def extract(self):
 
@@ -116,7 +119,7 @@ class EventPageParser(Parser):
         soup = self.load_soup()
         event["event_name"] = self.get_event_name(soup)
         event["event_date"] = self.get_event_date(soup)
-        event["sets_per_floor"] = self.construct_sets_per_floor_dict(soup)
+        event["sets"] = self.construct_sets_per_floor_dict(soup)
 
         return event
 
