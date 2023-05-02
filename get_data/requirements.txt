@@ -1,0 +1,5 @@
+black
+beautifulsoup4
+requests
+pytest
+pandas
