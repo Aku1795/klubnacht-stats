@@ -64,8 +64,8 @@ if __name__ == "__main__":
 
     main = Main()
 
-    #months_events = main.fetch_month_events(2016, 2)
-    #print(months_events)
-    years_events = main.fetch_years_events(2016)
-    flatten_df = main.convert_to_flatten_dataframe(years_events)
-    flatten_df.to_csv("berghain_2016_sets.csv", index=False)
+    months_events = main.fetch_month_events(2016, 2)
+    print(months_events)
+    # years_events = main.fetch_years_events(2016)
+    # flatten_df = main.convert_to_flatten_dataframe(years_events)
+    # flatten_df.to_csv("berghain_2016_sets.csv", index=False)
