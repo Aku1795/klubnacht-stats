@@ -1,71 +1,71 @@
-import json
-import itertools
 import pandas as pd
 
 from parsers import EventPageParser, MonthPageParser
+from utils import write_dataframe_to_gcs
+from flask import request, Flask
 
-class Main:
+BASE_ARCHIVE_URL = "https://www.berghain.berlin/en/program/archive/"
+BASE_EVENT_URL = "https://www.berghain.berlin"
+BUCKET = "klubnacht-stats-raw-10101"
 
-    def __init__(self):
+## utils
 
-        self.base_archive_url = "https://www.berghain.berlin/en/program/archive/"
-        self.base_event_url = "https://www.berghain.berlin"
+def _format_month(month):
+    return str(month) if month > 9 else f"0{month}"
 
-    def _format_month(self, month):
+def fetch_month_events(base_archive_url, base_event_url,year, month):
+    formated_month = _format_month(month)
+    url = f"{base_archive_url}{year}/{formated_month}/"
 
-        return str(month) if month > 9 else f"0{month}"
+    events_extractor = MonthPageParser(url)
+    event_ids = events_extractor.extract()
 
-    def fetch_month_events(self, year, month):
-        formated_month = self._format_month(month)
-        url = f"{self.base_archive_url}{year}/{formated_month}/"
+    events = []
 
-        events_extractor = MonthPageParser(url)
-        event_ids = events_extractor.extract()
+    for id in event_ids:
+        url = base_event_url + id
+        timetable_extractor = EventPageParser(url)
 
-        events = []
+        event = timetable_extractor.extract()
+        events.append(event)
 
-        for id in event_ids:
-            url = self.base_event_url + id
-            timetable_extractor = EventPageParser(url)
+    return events
 
-            event = timetable_extractor.extract()
-            events.append(event)
+def convert_to_flatten_dataframe(self, events):
 
-        return events
+    flatten_df = pd.json_normalize(
+        events, "sets", ["event_name", "event_date"]
+    )
+    return flatten_df
 
-    def fetch_years_events(self, year):
-        years_events = []
-        for i in range(1, 13):
-            try:
-                years_events.append(self.fetch_month_events(year, i))
-            except Exception as e:
-                continue
+def convert_to_flatten_dataframe(self, events):
 
-        return list(itertools.chain.from_iterable(years_events))
+    flatten_df = pd.json_normalize(
+        events, "sets", ["event_name", "event_date"]
+    )
+    return flatten_df
 
-    def convert_to_flatten_dataframe(self, events):
+#app
+app = Flask(__name__)
 
-        flatten_df = pd.json_normalize(
-            events, "sets", ["event_name", "event_date"]
-        )
-        return flatten_df
+# Routes
+@app.route("/")
+def index():
+    return "Let's crap baby"
 
+@app.route("/scrap_month", methods=["POST"])
+def scrap_month():
 
+    data = request.get_json()
+    year = data["year"]
+    month = int(data["month"])
 
+    events = fetch_month_events(BASE_ARCHIVE_URL, BASE_ARCHIVE_URL, year, month)
+    flatten_df = convert_to_flatten_dataframe(events)
 
-    def write_to_json(self, events):
-        json_object = json.dumps(events)
-
-        with open("sample.json", "w") as outfile:
-            outfile.write(json_object)
+    write_dataframe_to_gcs(flatten_df, BUCKET, f"berghain_{year}_{_format_month(month)}_sets.csv")
 
 
 if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0")
 
-    main = Main()
-
-    months_events = main.fetch_month_events(2016, 2)
-    print(months_events)
-    # years_events = main.fetch_years_events(2016)
-    # flatten_df = main.convert_to_flatten_dataframe(years_events)
-    # flatten_df.to_csv("berghain_2016_sets.csv", index=False)

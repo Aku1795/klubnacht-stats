@@ -15,10 +15,7 @@ def write_dataframe_to_gcs(dataframe, bucket_name, file_name):
     # Create a blob object with the desired filename
     blob = bucket.blob(file_name)
 
-    # Set the content type of the blob to 'text/csv'
-    blob.content_type = 'text/csv'
-
     # Upload the CSV data to the blob
-    blob.upload_from_string(csv_data)
+    blob.upload_from_string(csv_data, 'text/csv')
 
     print(f"File '{file_name}' uploaded to '{bucket_name}' bucket.")
