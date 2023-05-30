@@ -5,3 +5,4 @@ pytest
 pandas
 google-cloud-storage
 flask
+gunicorn
