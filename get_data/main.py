@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 from parsers import EventPageParser, MonthPageParser
 from utils import write_dataframe_to_gcs
@@ -23,7 +24,8 @@ def fetch_month_events(base_archive_url, base_event_url,year, month):
     events = []
 
     for id in event_ids:
-        url = base_event_url + id
+
+        url =f"{base_event_url}{id}"
         timetable_extractor = EventPageParser(url)
 
         event = timetable_extractor.extract()
@@ -31,14 +33,14 @@ def fetch_month_events(base_archive_url, base_event_url,year, month):
 
     return events
 
-def convert_to_flatten_dataframe(self, events):
+def convert_to_flatten_dataframe(events):
 
     flatten_df = pd.json_normalize(
         events, "sets", ["event_name", "event_date"]
     )
     return flatten_df
 
-def convert_to_flatten_dataframe(self, events):
+def convert_to_flatten_dataframe(events):
 
     flatten_df = pd.json_normalize(
         events, "sets", ["event_name", "event_date"]
@@ -60,12 +62,12 @@ def scrap_month():
     year = data["year"]
     month = int(data["month"])
 
-    events = fetch_month_events(BASE_ARCHIVE_URL, BASE_ARCHIVE_URL, year, month)
+    events = fetch_month_events(BASE_ARCHIVE_URL, BASE_EVENT_URL, year, month)
     flatten_df = convert_to_flatten_dataframe(events)
-
     write_dataframe_to_gcs(flatten_df, BUCKET, f"berghain_{year}_{_format_month(month)}_sets.csv")
 
+    return f"Scrapped {year}-{month} events"
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 
