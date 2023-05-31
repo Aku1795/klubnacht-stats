@@ -9,9 +9,10 @@ BASE_ARCHIVE_URL = "https://www.berghain.berlin/en/program/archive/"
 BASE_EVENT_URL = "https://www.berghain.berlin"
 BUCKET = "klubnacht-stats-raw-10101"
 
+
 ## scrapping methods
 
-def fetch_month_events(base_archive_url, base_event_url,year, month):
+def fetch_month_events(base_archive_url, base_event_url, year, month):
     url = f"{base_archive_url}{year}/{month}/"
 
     events_extractor = MonthPageParser(url)
@@ -20,7 +21,6 @@ def fetch_month_events(base_archive_url, base_event_url,year, month):
     events = []
 
     for id in event_ids:
-
         url = f"{base_event_url}{id}"
         timetable_extractor = EventPageParser(url)
 
@@ -29,24 +29,26 @@ def fetch_month_events(base_archive_url, base_event_url,year, month):
 
     return events
 
-def convert_to_flatten_dataframe(events):
 
+def convert_to_flatten_dataframe(events):
     flatten_df = pd.json_normalize(
         events, "sets", ["event_name", "event_date"]
     )
     return flatten_df
 
+
 # app
 app = Flask(__name__)
+
 
 # Routes
 @app.route("/")
 def index():
     return "Let's crap baby"
 
+
 @app.route("/scrap_month", methods=["POST"])
 def scrap_month():
-
     data = request.json
     year = data["year"]
     month = format_month(int(data["month"]))
@@ -57,6 +59,6 @@ def scrap_month():
 
     return f"Scrapped {year}-{month} events"
 
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-

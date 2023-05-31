@@ -2,14 +2,14 @@ provider "google" {
     project = "klubnacht-stats"
 }
 
-resource "google_artifact_registry_repository" "my-repo" {
+resource "google_artifact_registry_repository" "scrapper_repo" {
   location = "us-west1"
   repository_id = "klubnacht-scrapper"
   format = "docker"
 }
 
 resource "null_resource" "building_docker_image" {
-  depends_on = [google_artifact_registry_repository.my-repo]
+  depends_on = [google_artifact_registry_repository.scrapper_repo]
    triggers = {
     python_file       = md5(file("./main.py"))
     docker_file       = md5(file("./Dockerfile"))
@@ -25,7 +25,8 @@ resource "null_resource" "building_docker_image" {
   }
 }
 
-resource "google_cloud_run_service" "default" {
+resource "google_cloud_run_service" "scrapper" {
+  depends_on = [null_resource.building_docker_image]
   name     = "scrapper-service"
   location = "us-west1"
 
