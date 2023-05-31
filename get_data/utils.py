@@ -19,3 +19,6 @@ def write_dataframe_to_gcs(dataframe, bucket_name, file_name):
     blob.upload_from_string(csv_data, 'text/csv')
 
     print(f"File '{file_name}' uploaded to '{bucket_name}' bucket.")
+
+def format_month(month):
+    return str(month) if month > 9 else f"0{month}"
