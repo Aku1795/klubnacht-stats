@@ -3,7 +3,7 @@ provider "google" {
 }
 
 resource "google_artifact_registry_repository" "scrapper_repo" {
-  location = "us-west1"
+  location = var.location
   repository_id = "klubnacht-scrapper"
   format = "docker"
 }
@@ -28,7 +28,7 @@ resource "null_resource" "building_docker_image" {
 resource "google_cloud_run_service" "scrapper" {
   depends_on = [null_resource.building_docker_image]
   name     = "scrapper-service"
-  location = "us-west1"
+  location = var.location
 
   template {
     spec {
