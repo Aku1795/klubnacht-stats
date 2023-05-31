@@ -40,13 +40,6 @@ def convert_to_flatten_dataframe(events):
     )
     return flatten_df
 
-def convert_to_flatten_dataframe(events):
-
-    flatten_df = pd.json_normalize(
-        events, "sets", ["event_name", "event_date"]
-    )
-    return flatten_df
-
 #app
 app = Flask(__name__)
 
@@ -58,7 +51,7 @@ def index():
 @app.route("/scrap_month", methods=["POST"])
 def scrap_month():
 
-    data = request.get_json()
+    data = request.json
     year = data["year"]
     month = int(data["month"])
 
