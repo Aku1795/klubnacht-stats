@@ -90,7 +90,7 @@ resource "google_cloud_run_service_iam_member" "scheduler" {
 resource "google_cloud_scheduler_job" "scrapper_scheduler" {
   name             = "scraper_scheduler"
   description      = "scraper_scheduler"
-  schedule         = "0 5 5 * *"
+  schedule         = "0 5 2 * *"
   region           = var.location
   attempt_deadline = "320s"
 
