@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 from parsers import EventPageParser, MonthPageParser
-from utils import write_dataframe_to_gcs, format_month
+from utils import write_dataframe_to_gcs, format_month, compute_last_year_month
 from flask import request, Flask
 
 BASE_ARCHIVE_URL = "https://www.berghain.berlin/en/program/archive/"
@@ -36,6 +36,14 @@ def convert_to_flatten_dataframe(events):
     )
     return flatten_df
 
+def scrap_and_upload_events(year, month):
+    events = fetch_month_events(BASE_ARCHIVE_URL, BASE_EVENT_URL, year, month)
+    flatten_df = convert_to_flatten_dataframe(events)
+    write_dataframe_to_gcs(flatten_df, BUCKET, f"berghain_{year}_{month}_sets.csv")
+
+    return f"Scraped {year}-{month} events"
+
+
 
 # app
 app = Flask(__name__)
@@ -44,7 +52,15 @@ app = Flask(__name__)
 # Routes
 @app.route("/")
 def index():
-    return "Let's crap baby"
+    return "Let's scrap baby"
+
+
+@app.route('/scrap_last_month', methods=['GET'])
+def scrap_last_month():
+    year, month = compute_last_year_month()
+    month = format_month(month)
+
+    return scrap_and_upload_events(year, month)
 
 
 @app.route("/scrap_month", methods=["POST"])
@@ -53,11 +69,7 @@ def scrap_month():
     year = data["year"]
     month = format_month(int(data["month"]))
 
-    events = fetch_month_events(BASE_ARCHIVE_URL, BASE_EVENT_URL, year, month)
-    flatten_df = convert_to_flatten_dataframe(events)
-    write_dataframe_to_gcs(flatten_df, BUCKET, f"berghain_{year}_{month}_sets.csv")
-
-    return f"Scrapped {year}-{month} events"
+    return scrap_and_upload_events(year, month)
 
 
 if __name__ == "__main__":

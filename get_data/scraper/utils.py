@@ -1,4 +1,4 @@
-import pandas as pd
+from datetime import date
 from google.cloud import storage
 
 
@@ -20,5 +20,18 @@ def write_dataframe_to_gcs(dataframe, bucket_name, file_name):
 
     print(f"File '{file_name}' uploaded to '{bucket_name}' bucket.")
 
+
 def format_month(month):
     return str(month) if month > 9 else f"0{month}"
+
+
+def compute_last_year_month():
+    current_date = date.today()
+    if current_date.month == 1:
+        year = current_date.year - 1
+        month = 12
+    else:
+        year = current_date.year
+        month = current_date.month - 1
+
+    return year, month
