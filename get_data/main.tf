@@ -44,8 +44,8 @@ resource "null_resource" "building_docker_image" {
 
   provisioner "local-exec" {
     command = <<EOF
-           docker build -t us-west1-docker.pkg.dev/klubnacht-stats/klubnacht-scraper/scraper-image ./scraper/
-           docker push us-west1-docker.pkg.dev/klubnacht-stats/klubnacht-scraper/scraper-image
+           docker build -t ${var.docker_image_name} ./scraper/
+           docker push ${var.docker_image_name}
        EOF
   }
 }
@@ -58,7 +58,7 @@ resource "google_cloud_run_service" "scraper" {
   template {
     spec {
       containers {
-        image = "us-west1-docker.pkg.dev/klubnacht-stats/klubnacht-scraper/scraper-image"
+        image = var.docker_image_name
       }
     }
   }
