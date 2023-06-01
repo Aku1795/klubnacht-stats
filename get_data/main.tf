@@ -1,5 +1,5 @@
 provider "google" {
-    project = "klubnacht-stats"
+  project = "klubnacht-stats"
 }
 
 ### Service enablers
@@ -28,18 +28,18 @@ resource "google_project_service" "scheduler_api" {
 ### Scrapper
 
 resource "google_artifact_registry_repository" "scraper_repo" {
-  location = var.location
+  location      = var.location
   repository_id = "klubnacht-scraper"
-  format = "docker"
+  format        = "docker"
 }
 
 resource "null_resource" "building_docker_image" {
   depends_on = [google_artifact_registry_repository.scraper_repo]
-   triggers = {
+  triggers = {
     python_file       = md5(file("./scraper/main.py"))
     docker_file       = md5(file("./scraper/Dockerfile"))
     requirements_file = md5(file("./scraper/requirements.txt"))
-    dockerignore = md5(file("./scraper/.dockerignore"))
+    dockerignore      = md5(file("./scraper/.dockerignore"))
   }
 
   provisioner "local-exec" {
@@ -52,8 +52,8 @@ resource "null_resource" "building_docker_image" {
 
 resource "google_cloud_run_service" "scraper" {
   depends_on = [null_resource.building_docker_image]
-  name     = "scraper-service"
-  location = var.location
+  name       = "scraper-service"
+  location   = var.location
 
   template {
     spec {
