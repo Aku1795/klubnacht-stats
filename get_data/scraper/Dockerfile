@@ -3,6 +3,10 @@
 # https://hub.docker.com/_/python
 FROM python:3.11-slim
 
+# GOOGLE cloud args
+ARG BUCKET
+ENV BUCKET ${BUCKET}
+
 # Allow statements and log messages to immediately appear in the logs
 ENV PYTHONUNBUFFERED True
 

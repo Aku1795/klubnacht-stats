@@ -2,7 +2,7 @@ provider "google" {
     project = "klubnacht-stats"
 }
 
-### Service enablements
+### Service enablers
 
 resource "google_project_service" "run_api" {
   service            = "run.googleapis.com"
@@ -44,7 +44,7 @@ resource "null_resource" "building_docker_image" {
 
   provisioner "local-exec" {
     command = <<EOF
-           docker build -t ${var.docker_image_name} ./scraper/
+           docker build --tag ${var.docker_image_name} --build-arg BUCKET=${var.bucket} ./scraper/
            docker push ${var.docker_image_name}
        EOF
   }
@@ -67,6 +67,15 @@ resource "google_cloud_run_service" "scraper" {
     percent         = 100
     latest_revision = true
   }
+}
+
+resource "google_cloud_run_service_iam_member" "cloud_run_service_invoker" {
+  project        = google_cloud_run_service.scraper.project
+  location        = google_cloud_run_service.scraper.location
+  service = google_cloud_run_service.scraper.name
+
+  role   = "roles/run.invoker"
+  member = "allUsers"
 }
 
 ### Date generator
@@ -104,7 +113,7 @@ resource "google_cloudfunctions_function" "date_generator" {
   entry_point           = "current_date"
 }
 
-resource "google_cloudfunctions_function_iam_member" "invoker" {
+resource "google_cloudfunctions_function_iam_member" "cloud_func_invoker" {
   project        = google_cloudfunctions_function.date_generator.project
   region         = google_cloudfunctions_function.date_generator.region
   cloud_function = google_cloudfunctions_function.date_generator.name
@@ -112,3 +121,65 @@ resource "google_cloudfunctions_function_iam_member" "invoker" {
   role   = "roles/cloudfunctions.invoker"
   member = "allUsers"
 }
+
+
+### Workflow
+
+resource "google_project_service" "workflows" {
+  service            = "workflows.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_service_account" "workflows_service_account" {
+  account_id   = "sample-workflows-sa"
+  display_name = "Sample Workflows Service Account"
+}
+
+resource "google_workflows_workflow" "workflows_example" {
+  name            = "scrapping_workflow"
+  region          = var.location
+  description     = "Workflow to be triggered once per month to get last months events"
+  service_account = google_service_account.workflows_service_account.id
+  source_contents = <<-EOF
+  # This is a sample workflow, feel free to replace it with your source code
+  #
+  # This workflow does the following:
+  # - reads current time and date information from an external API and stores
+  #   the response in currentTime variable
+  # - retrieves a list of Wikipedia articles related to the day of the week
+  #   from currentTime
+  # - returns the list of articles as an output of the workflow
+  # FYI, In terraform you need to escape the $$ or it will cause errors.
+
+  - getPreviousMonth:
+      call: http.get
+      args:
+          url: ${google_cloudfunctions_function.date_generator.https_trigger_url}
+      result: previousYearMonth
+  - return_result:
+      return: $${previousYearMonth.body}
+
+EOF
+
+  depends_on = [google_project_service.workflows]
+}
+
+
+#HTTP server responded with error code 500
+#in step "scrapPreviousMonthEvents", routine "main", line: 17
+#{
+#  "body": "<!doctype html>\n<html lang=en>\n<title>500 Internal Server Error</title>\n<h1>Internal Server Error</h1>\n<p>The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.</p>\n",
+#  "code": 500,
+#  "headers": {
+#    "Alt-Svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+#    "Content-Length": "265",
+#    "Content-Type": "text/html; charset=utf-8",
+#    "Date": "Thu, 01 Jun 2023 11:44:54 GMT",
+#    "Server": "Google Frontend",
+#    "X-Cloud-Trace-Context": "65a71344b4df2781b3d6da0b45a591a2;o=1"
+#  },
+#  "message": "HTTP server responded with error code 500",
+#  "tags": [
+#    "HttpError"
+#  ]
+#}

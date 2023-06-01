@@ -7,7 +7,7 @@ from flask import request, Flask
 
 BASE_ARCHIVE_URL = "https://www.berghain.berlin/en/program/archive/"
 BASE_EVENT_URL = "https://www.berghain.berlin"
-BUCKET = "klubnacht-stats-raw-10101"
+BUCKET = os.getenv("BUCKET")
 
 
 ## scrapping methods
