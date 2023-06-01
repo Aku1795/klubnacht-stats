@@ -10,5 +10,5 @@ variable "bucket" {
 
 variable "docker_image_name" {
   type = string
-  default = "us-west1-docker.pkg.dev/klubnacht-stats/klubnacht-scraper/scraper-image"
+  default = "us-west1-docker.pkg.dev/klubnacht-stats/klubnacht-scraper/scraper-image:latest"
 }
