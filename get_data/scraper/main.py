@@ -39,7 +39,7 @@ def convert_to_flatten_dataframe(events):
 def scrap_and_upload_events(year, month):
     events = fetch_month_events(BASE_ARCHIVE_URL, BASE_EVENT_URL, year, month)
     flatten_df = convert_to_flatten_dataframe(events)
-    write_dataframe_to_gcs(flatten_df, BUCKET, f"berghain_{year}_{month}_sets.csv")
+    write_dataframe_to_gcs(flatten_df, BUCKET, f"sets/{year}/{month}/berghain_sets.csv")
 
     return f"Scraped {year}-{month} events"
 
