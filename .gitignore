@@ -130,3 +130,9 @@ dmypy.json
 
 #Mac OS files
 .DS_Store
+
+.terraform/
+.terraform.lock.hcl
+.terraform.tfstate*
+terraform.tfstate*
+

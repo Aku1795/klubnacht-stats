@@ -1,4 +1,0 @@
-black
-beautifulsoup4
-requests
-pytest
